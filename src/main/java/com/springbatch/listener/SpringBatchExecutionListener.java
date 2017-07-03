@@ -12,6 +12,10 @@ import org.springframework.batch.core.StepExecution;
 public class SpringBatchExecutionListener implements JobExecutionListener{
 
   @Override
+  public void beforeJob(JobExecution arg0) {
+  }
+  
+  @Override
   public void afterJob(JobExecution jobExecution) {
     StringBuilder protocol = new StringBuilder();
     protocol.append("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n");
@@ -43,11 +47,4 @@ public class SpringBatchExecutionListener implements JobExecutionListener{
     }
     
   }
-
-  @Override
-  public void beforeJob(JobExecution arg0) {
-   System.out.println("Before Job....");
-    
-  }
-
 }

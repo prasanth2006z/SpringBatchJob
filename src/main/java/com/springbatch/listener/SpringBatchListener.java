@@ -10,51 +10,40 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 /**
  * Created by prasanth.p on 01/07/17.
  */
-public class SpringBatchListener implements StepExecutionListener, ItemReadListener<Object>,ChunkListener {
+public class SpringBatchListener implements StepExecutionListener, ItemReadListener<Object>, ChunkListener {
 
   @Override
   public void beforeStep(StepExecution stepExecution) {
-      System.out.println("processed rows=="+stepExecution.getReadCount());
   }
 
   @Override
   public ExitStatus afterStep(StepExecution stepExecution) {
-    System.out.println("processed rows=="+stepExecution.getReadCount());
-    System.out.println("Read count=="+stepExecution.getReadCount());
-      return null;
+    return ExitStatus.COMPLETED;
   }
-  
-    @Override
-    public void beforeRead() {
-      System.out.println("Before read...");
-    }
 
-    @Override
-    public void afterRead(Object o) {
-      System.out.println("After read..."+o.toString());
-    }
+  @Override
+  public void beforeRead() {
+  }
 
-    @Override
-    public void onReadError(Exception e) {
+  @Override
+  public void afterRead(Object o) {
+  }
 
-    }
+  @Override
+  public void onReadError(Exception e) {
+  }
 
-    @Override
-    public void afterChunk(ChunkContext arg0) {
-      System.out.println("closing...");
-      arg0.getStepContext().close();
-      
-    }
+  @Override
+  public void afterChunk(ChunkContext arg0) {
+    arg0.getStepContext().close();
+  }
 
-    @Override
-    public void afterChunkError(ChunkContext arg0) {
-      // TODO Auto-generated method stub
-      
-    }
+  @Override
+  public void afterChunkError(ChunkContext arg0) {
+  }
 
-    @Override
-    public void beforeChunk(ChunkContext arg0) {
-      // TODO Auto-generated method stub
-      
-    }
+  @Override
+  public void beforeChunk(ChunkContext arg0) {
+
+  }
 }

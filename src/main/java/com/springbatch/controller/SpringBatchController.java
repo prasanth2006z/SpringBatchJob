@@ -23,9 +23,8 @@ public class SpringBatchController {
     @RequestMapping(value = "/run", method = RequestMethod.GET)
     @ResponseBody
     public String run() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
-        System.out.println("koooiiii");
         batchJobService.run();
-        return "hi...";
+        return "Job Completed!!!";
     }
 
 }

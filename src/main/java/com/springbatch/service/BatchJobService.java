@@ -24,7 +24,7 @@ public class BatchJobService {
 
 
     public void run() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
-        jobLauncher.run(job, new JobParameters());
+      jobLauncher.run(job, new JobParameters());
 
     }
 }

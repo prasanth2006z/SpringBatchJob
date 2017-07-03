@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.springbatch.listener.SpringBatchExecutionListener;
 import com.springbatch.listener.SpringBatchListener;
@@ -31,85 +31,130 @@ import com.springbatch.service.BatchJobService;
 @EnableBatchProcessing
 @ComponentScan(basePackages = "com.springbatch")
 public class BatchConfig {
+  /**
+   * 
+   */
+  @Autowired
+  private JobBuilderFactory jobs;
+  /**
+   * 
+   */
+  @Autowired
+  private StepBuilderFactory stepBuilderFactory;
+  /**
+   * 
+   */
+  protected static final List<String> OVERRIDEN_BY_EXPRESSION_VALUE = null;
 
-    @Autowired
-    private JobBuilderFactory jobs;
-    @Autowired
-    private StepBuilderFactory stepBuilderFactory;
-    protected static final List<String> OVERRIDEN_BY_EXPRESSION_VALUE = null;
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  public BatchJobService batchJobService() {
+    return new BatchJobService();
+  }
 
-    @Bean
-    public BatchJobService batchJobService() {
-        return new BatchJobService();
-    }
+  /**
+   * 
+   * @param masterStep
+   * @return
+   */
+  @Bean
+  public Job job(Step masterStep) {
+    return jobs.get("job").listener(SpringBatchExecutionListener())
+      .flow(masterStep).end()
+      .build();
+  }
 
-    @Bean
-    public Job job(Step masterStep) {
-        return jobs.get("job").listener(SpringBatchExecutionListener())
-                .flow(masterStep).end()
-                .build();
-    }
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  public Step masterStep() {
+    return stepBuilderFactory.get("masterStep")
+      .partitioner(start())
+      .partitioner("start", springBatchPartitioner())
+      .taskExecutor(taskExecutor())
+      .gridSize(20)
+      .build();
+  }
 
-    @Bean
-    public Step masterStep() {
-        return stepBuilderFactory.get("masterStep")
-                .partitioner(start())
-                .partitioner("start", springBatchPartitioner())
-                .taskExecutor(taskExecutor())
-                .gridSize(3)
-                .build();
-    }
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  public SpringBatchExecutionListener SpringBatchExecutionListener() {
+    return new SpringBatchExecutionListener();
 
-    @Bean
-    public SpringBatchExecutionListener SpringBatchExecutionListener() {
-      return new SpringBatchExecutionListener();
-        
-    }
-    
-    @Bean
-    public TaskExecutor taskExecutor() {
-        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor=new SimpleAsyncTaskExecutor();
-        //ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        //simpleAsyncTaskExecutor.setMaxPoolSize(5);
-        //taskExecutor.afterPropertiesSet();
-        return simpleAsyncTaskExecutor;
-    }
+  }
 
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  public TaskExecutor taskExecutor() {
+    ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+    taskExecutor.setMaxPoolSize(5);
+    taskExecutor.afterPropertiesSet();
+    return taskExecutor;
+  }
 
-    @Bean
-    public Step start() {
-        return stepBuilderFactory.get("start")
-                .listener(springBatchListener())
-               // .allowStartIfComplete(true)
-                .chunk(1)
-                .reader(springBatchListReader(OVERRIDEN_BY_EXPRESSION_VALUE))
-                .processor(springBatchProcessor())
-                .build();
-    }
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  public Step start() {
+    return stepBuilderFactory.get("start")
+      .listener(springBatchListener())
+      .chunk(1)
+      .reader(springBatchListReader(OVERRIDEN_BY_EXPRESSION_VALUE))
+      .processor(springBatchProcessor())
+      .build();
+  }
 
-    
-    
-    @Bean
-    @StepScope
-    public ItemReader springBatchListReader(@Value("#{stepExecutionContext[list]}") List<String> list) {
-        return new SpringBatchListReader(list);
-    }
+  /**
+   * 
+   * @param list
+   * @return
+   */
+  @Bean
+  @StepScope
+  public ItemReader<String> springBatchListReader(@Value("#{stepExecutionContext[list]}") List<String> list) {
+    return new SpringBatchListReader(list);
+  }
 
-    @Bean
-    @StepScope
-    public SpringBatchProcessor springBatchProcessor() {
-        return new SpringBatchProcessor();
-    }
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  @StepScope
+  public SpringBatchProcessor springBatchProcessor() {
+    return new SpringBatchProcessor();
+  }
 
-    @Bean
-    @StepScope
-    public SpringBatchListener springBatchListener() {
-        return new SpringBatchListener();
-    }
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  @StepScope
+  public SpringBatchListener springBatchListener() {
+    return new SpringBatchListener();
+  }
 
-    @Bean
-    @StepScope
-    public SpringBatchPartitioner springBatchPartitioner() {
-        return new SpringBatchPartitioner();
-    }
+  /**
+   * 
+   * @return
+   */
+  @Bean
+  @StepScope
+  public SpringBatchPartitioner springBatchPartitioner() {
+    return new SpringBatchPartitioner();
+  }
 }

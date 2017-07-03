@@ -13,9 +13,8 @@ public class SpringBatchProcessor implements ItemProcessor<Object, Object>{
 
     @Override
     public Object process(Object o) throws Exception {
-        System.out.println("Reading ======>"+threadName.toString());
         String name=o.toString();
-        System.out.println("name===>"+name);
+        System.out.println("Reading "+name+" by :"+threadName.toString());
         return o;
     }
 }
