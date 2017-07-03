@@ -32,7 +32,7 @@ public class SpringBatchPartitioner implements Partitioner {
     for (int i = 0; i < SpringBatchUtil.getList().size(); i++) {
       ExecutionContext context = new ExecutionContext();
       context.put("list", SpringBatchUtil.getList().get(i));
-      context.put("name", "Thread" + i);
+      context.put("name", "Thread-" + i);
       partitionMap.put("partitionCode" + i, context);
     }
     return partitionMap;
