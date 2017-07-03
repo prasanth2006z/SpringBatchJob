@@ -16,9 +16,9 @@ public class SpringBatchPartitioner implements Partitioner {
 
     private List<String> getList() {
         List<String> list = new ArrayList<>();
-        list.add("Prasanth");
-        list.add("ramya");
-        list.add("ramyaPrash");
+        list.add("123");
+        list.add("456");
+        list.add("789");
         return list;
 
     }

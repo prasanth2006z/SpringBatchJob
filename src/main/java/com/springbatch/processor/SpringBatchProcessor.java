@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 /**
  * Created by prasanth.p on 01/07/17.
  */
-public class SpringBatchProcessor implements ItemProcessor{
+public class SpringBatchProcessor implements ItemProcessor<Object, Object>{
 
     @Value("#{stepExecutionContext[name]}")
     private String threadName;
@@ -16,6 +16,6 @@ public class SpringBatchProcessor implements ItemProcessor{
         System.out.println("Reading ======>"+threadName.toString());
         String name=o.toString();
         System.out.println("name===>"+name);
-        return null;
+        return o;
     }
 }

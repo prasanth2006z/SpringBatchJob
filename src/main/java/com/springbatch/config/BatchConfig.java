@@ -1,10 +1,7 @@
 package com.springbatch.config;
 
-import com.springbatch.listener.SpringBatchListener;
-import com.springbatch.partitioner.SpringBatchPartitioner;
-import com.springbatch.processor.SpringBatchProcessor;
-import com.springbatch.reader.SpringBatchListReader;
-import com.springbatch.service.BatchJobService;
+import java.util.List;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -13,12 +10,19 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import com.springbatch.listener.SpringBatchExecutionListener;
+import com.springbatch.listener.SpringBatchListener;
+import com.springbatch.partitioner.SpringBatchPartitioner;
+import com.springbatch.processor.SpringBatchProcessor;
+import com.springbatch.reader.SpringBatchListReader;
+import com.springbatch.service.BatchJobService;
 
 /**
  * Created by prasanth.p on 01/07/17.
@@ -32,7 +36,7 @@ public class BatchConfig {
     private JobBuilderFactory jobs;
     @Autowired
     private StepBuilderFactory stepBuilderFactory;
-
+    protected static final List<String> OVERRIDEN_BY_EXPRESSION_VALUE = null;
 
     @Bean
     public BatchJobService batchJobService() {
@@ -41,7 +45,7 @@ public class BatchConfig {
 
     @Bean
     public Job job(Step masterStep) {
-        return jobs.get("job")
+        return jobs.get("job").listener(SpringBatchExecutionListener())
                 .flow(masterStep).end()
                 .build();
     }
@@ -57,9 +61,14 @@ public class BatchConfig {
     }
 
     @Bean
+    public SpringBatchExecutionListener SpringBatchExecutionListener() {
+      return new SpringBatchExecutionListener();
+        
+    }
+    
+    @Bean
     public TaskExecutor taskExecutor() {
         SimpleAsyncTaskExecutor simpleAsyncTaskExecutor=new SimpleAsyncTaskExecutor();
-
         //ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //simpleAsyncTaskExecutor.setMaxPoolSize(5);
         //taskExecutor.afterPropertiesSet();
@@ -71,17 +80,19 @@ public class BatchConfig {
     public Step start() {
         return stepBuilderFactory.get("start")
                 .listener(springBatchListener())
-                .allowStartIfComplete(true)
+               // .allowStartIfComplete(true)
                 .chunk(1)
-                .reader(springBatchListReader())
+                .reader(springBatchListReader(OVERRIDEN_BY_EXPRESSION_VALUE))
                 .processor(springBatchProcessor())
                 .build();
     }
 
+    
+    
     @Bean
     @StepScope
-    public ItemReader springBatchListReader() {
-        return new SpringBatchListReader();
+    public ItemReader springBatchListReader(@Value("#{stepExecutionContext[list]}") List<String> list) {
+        return new SpringBatchListReader(list);
     }
 
     @Bean
